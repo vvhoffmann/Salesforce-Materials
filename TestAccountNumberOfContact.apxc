@@ -1,0 +1,36 @@
+@isTest
+public class TestAccountNumberOfContact {
+
+    @isTest static void TestAccountNumberOfContactOnInsertandUpdate()
+    {
+        Account acc=new Account(Name='Test Acc');
+        insert acc;
+        Contact con=new Contact(FirstName='LALA', LastName='TT', AccountID=acc.ID);
+        
+        Test.startTest();
+        Database.insert(con);
+        Test.stopTest();
+        
+        System.assertEquals(1, [SELECT ContactCounter__c FROM Account WHERE ID=:acc.Id].ContactCounter__c); 
+        
+		con.LastName='Hakuna';
+        update con;
+        System.assertEquals(1, [SELECT ContactCounter__c FROM Account WHERE ID=:acc.Id].ContactCounter__c);
+    }
+    
+    @isTest static void TestAccountNumberOfContactOnDelete()
+    {
+        Account acc=new Account(Name='Test Acc',ContactCounter__c=0);
+        insert acc;
+        Contact[] con=new List<Contact>{
+            new Contact(FirstName='LALA', LastName='TT', AccountID=acc.ID),
+            new Contact(FirstName='GAGA', LastName='TaW', AccountID=acc.ID)
+        };
+        insert con;
+        
+        Test.startTest();
+        Database.delete(con[1],false);
+        Test.stopTest();
+        System.assertEquals(1, [SELECT ContactCounter__c FROM Account WHERE ID=:acc.Id].ContactCounter__c);
+    }
+}

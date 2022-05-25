@@ -1,0 +1,15 @@
+public class AccountNumberOfContactsUpdateScript {
+    public static void UpdateActualRecords(){
+        Map<Id,Account> accs= new Map<Id,Account>([SELECT ID, ContactCounter__c FROM Account]);
+
+        for(AggregateResult s:[SELECT AccountId, COUNT(ID) Counter 
+                               FROM Contact 
+                               WHERE AccountID IN :accs.keySet()
+                               GROUP BY AccountId]){
+                ID accid=(ID)s.get('AccountID');
+                accs.get(accid).ContactCounter__c=(Decimal)s.get('Counter');
+        }
+        
+        update accs.values();
+    }
+}

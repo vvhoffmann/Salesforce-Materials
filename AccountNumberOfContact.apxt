@@ -1,0 +1,26 @@
+trigger AccountNumberOfContact on Contact (after insert,after delete, after update, after undelete) {
+    List<Contact> contcts=new List<Contact>();
+    List<Account> accs=new List<Account>();
+    
+    if(Trigger.isInsert || Trigger.isUpdate || Trigger.isUndelete){
+        contcts=(List<Contact>)Trigger.New;
+    }
+    else if(Trigger.isDelete){
+        contcts=(List<Contact>)Trigger.Old;
+    }
+    
+    Set<Id> accsId=new Set<Id>();
+    for(Contact c:contcts){
+        accsId.add(c.AccountId);
+    }
+    
+    for(AggregateResult s:[SELECT AccountId, COUNT(ID) Counter FROM Contact WHERE AccountId IN :accsId GROUP BY AccountId]){
+        Account acc=new Account(
+            ID=(Id)s.get('AccountId'), 
+            ContactCounter__c=(Decimal)s.get('Counter')
+        );
+        accs.add(acc);
+    }
+    
+    update accs;
+}
